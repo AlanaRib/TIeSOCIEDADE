@@ -16,3 +16,9 @@ Nem Leaflet nem MapLibre são, por si só, um “mapa pronto” com ruas, bairro
 O Leaflet trabalha tradicionalmente com uma composição de camadas, tiles e elementos HTML/SVG/Canvas. Já o MapLibre GL JS possui um sistema de estilos que descreve explicitamente quais dados devem ser desenhados, em que ordem e com quais propriedades visuais
 
 1.2 - Principal diferença: raster x vetorial
+Essa é provavelmente a primeira distinção que precisamos compreender.
+O Leaflet não exige um tipo específico de mapa base. Ele pode utilizar diferentes fontes de tiles e pode trabalhar com tiles raster, nos quais cada pedaço do mapa é entregue essencialmente como uma imagem.
+Ou seja, o navegador recebe imagens correspondentes às partes do mapa e as posiciona na tela. O Leaflet é deliberadamente provider-agnostic: não obriga o desenvolvedor a utilizar um determinado fornecedor de mapas.
+Visualmente, isso significa que a aparência do mapa base depende bastante de como o provedor produziu aquelas imagens.
+
+O MapLibre GL JS é construído para trabalhar com vector tiles e renderizá-los utilizando WebGL. A aparência do mapa é definida por um Style Specification, que descreve fontes, camadas e propriedades de renderização
