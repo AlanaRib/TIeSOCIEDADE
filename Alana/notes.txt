@@ -5,3 +5,14 @@
 * Titulo:* Validar a camada de renderização do mapa e marcadores com o parceiro Henrich.
 * *Descrição:* Apresentar em reunião de alinhamento os protótipos de marcadores gráficos e o comportamento do mapa interativo utilizando a biblioteca selecionada, coletando o feedback do parceiro Henrich sobre a fluidez visual e usabilidade para assegurar alinhamento com a identidade do aplicativo.
 * *Entregável:* Ata de validação visual e lista de ajustes aprovada por Henrich.
+
+## TAREFA 1 ESTUDO DE CASO E MAPEAMENTO DE TECNOLOGIAS ##
+
+### PARTE 1 - DIFERENÇAS VISUAIS ###
+
+1.1 - Contextualização
+Nem Leaflet nem MapLibre são, por si só, um “mapa pronto” com ruas, bairros, parques etc. As bibliotecas são responsáveis principalmente pela renderização e interação com os dados cartográficos.
+É perfeitamente possível ter um mapa visualmente sofisticado usando Leaflet e um mapa visualmente simples usando MapLibre. A diferença fundamental é como cada biblioteca permite construir e controlar essa aparência.
+O Leaflet trabalha tradicionalmente com uma composição de camadas, tiles e elementos HTML/SVG/Canvas. Já o MapLibre GL JS possui um sistema de estilos que descreve explicitamente quais dados devem ser desenhados, em que ordem e com quais propriedades visuais
+
+1.2 - Principal diferença: raster x vetorial
