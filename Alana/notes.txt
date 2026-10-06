@@ -41,8 +41,9 @@ O MapLibre GL JS é construído para trabalhar com vector tiles e renderizá-los
 Podemos imaginar da seguinte forma:
 Tile -> Parques azuis -> MapLibre traz a opção de sobrescrever a cor para verde
 
-1.4 - Estilos dependentes dos dados para MapLibre
+1.4 - Personalização de marcadores
 
+#MapLibre
 A especificação do MapLibre possui expressões, que permitem que propriedades visuais dependam das características dos dados ou do estado da câmera.
 Em resumo, isso permite construir visualizações cartográficas que mudam de maneira inteligente conforme os dados e o nível de zoom.
 Conceitualmente, seria algo como
@@ -51,27 +52,19 @@ se categoria = "exposição artística"
 se categoria = "show musical"
     → marcador azul
 
-1.5 - Marcadores personalizados para o Leaflet
-
+#Leaflet
 O Leaflet possui suporte direto para marcadores personalizados.
 Essa personalização permite definir, entre alguns outros detalhes: imagem, tamanho, sombra, posição da âncora e dimensões do ícone.
 Também existe uma função que permite trabalhar com um elemento HTML, o que abre bastante espaço para criatividade no projeto.
-Esta é uma das maiores vantagens do Leaflet, não apresentar uma limitação séria para os marcadores estilizados do UMURA.
+Esta é uma das maiores vantagens do Leaflet, não apresentar uma limitação séria para os marcadores estilizados.
 
-1.6 - Marcadores personalizados para o MapLibre
-
-O MapLibre também permite criar marcadores personalizados.
-A API Marker permite fornecer um elemento HTML personalizado para o marcador. Isso significa que também podemos fazer um marcador contido em uma <div> e controlar sua aparência utilizando CSS.
-Além disso, o MapLibre permite configurar propriedades como: posição da âncora, classe CSS, rotação, escala, popup associado e arraste.
-Portanto, para um marcador individual e altamente customizado, tanto o Leaflet quanto o MapLibre apresentam uma interface bastante personalizadas.
-
-1.7 - Ícones e símbolos
+1.5 - Ícones e símbolos
 
 No MapLibre existe uma categoria de camada chamada symbol, destinada a elementos como textos e símbolos.
 Além disso, o MapLibre possui mecanismos próprios para trabalhar com imagens, sprites e fontes dentro do sistema de estilos. A própria especificação de estilo possui propriedades como sprite e glyphs.
 Isso é particularmente útil para mapas que precisam possuir uma linguagem visual própria.
 
-1.8 Camadas e ordem visual
+1.6 Camadas e ordem visual
 
 Aqui as duas bibliotecas adotam abordagens diferentes.
 
@@ -86,3 +79,80 @@ Aqui as duas bibliotecas adotam abordagens diferentes.
  No MapLibre, a ordem visual é uma característica do próprio Style Specification.
  As layers possuem uma ordem dentro do estilo, e essa ordem determina como elas participam da renderização. A API também permite adicionar uma layer antes de outra.
  Isso proporciona uma estrutura conceitualmente mais próxima de um sistema de composição cartográfica: background -> water -> land -> parks -> roads -> buildings -> labels -> application data
+
+1.7 - Textos e tipografia
+
+Esse é outro ponto em que o MapLibre se destaca conceitualmente.
+Como textos podem ser representados como elementos de uma symbol layer, o estilo pode controlar aspectos da sua apresentação.
+Isso significa que o mapa pode ter uma identidade tipográfica mais consistente:
+ Nome da cidade -> fonte A - 18px
+ Nome do bairro -> fonte B - 14px
+ Nome da rua - > fonte C - 11px
+No Leaflet, quando estamos usando tiles raster, os textos já fazem parte das imagens.
+Consequentemente, não temos esse mesmo nível de controle sobre cada label individual do mapa.
+
+1.8 - Zoom e mudanças de aparência
+
+No Leaflet com tiles raster, normalmente temos diferentes conjuntos de imagens para diferentes níveis de zoom.
+No MapLibre, o estilo pode utilizar expressões baseadas na câmera, incluindo o nível de zoom, para alterar propriedades visuais.
+O que nos permite visualizar informações conceitualmente assim:
+ Zoom 8
+  Brasil -> Estados -> Grandes cidades
+ 
+ Zoom 12
+  Cidades -> Bairros -> Principais visuais
+
+ Zoom 16
+  Ruas -> Estabelecimentos -> Pontos específicos
+Isso é especialmente interessante para interfaces em que o mapa é uma parte central do produto.
+
+1.9 - Rotação, inclinação e perspectiva
+
+#MapLibre
+O MapLibre possui um conceito explícito de camera, com propriedades como: zoom, pitch, bearinge, posição inicial...
+Isso permite experiências de visualização diferentes, como: visão superior -> visão inclinada -> perspectiva, além da rotação do mapa
+Além disso, a especificação suporta tipos de camada como fill-extrusion, permitindo representar geometrias com uma dimensão visual adicional.
+O MapLibre também possui recursos atuais relacionados a globo e terreno no ecossistema GL JS.
+
+#Leaflet
+O Leaflet possui suporte a: SVG, Canvas, GeoJSON, overlays, imagens, vídeos, panes personalizados, plugins e extensões próprias.
+Então a afirmação que podemos fazer referente ao Leaflet seria a de que ele oferece liberdade para compor elementos sobre o mapa.
+O MapLibre, por outro lado oferece um sistema mais integrado para controlar a representação cartográfica.
+
+1.10 - Animações e transições 
+
+Ambas as tecnologias possuem suporte para animações, a diferença principal aqui está na integração delas ao sistema.
+
+#MapLibre
+ O MapLibre possui suporte a propriedades de estilo com transições, inclusive uma definição global de transição e transições específicas de propriedades.
+
+#Leaflet
+ O Leaflet também possui animações relacionadas à movimentação e zoom do mapa e permite implementar animações próprias através do DOM/CSS/JavaScript.
+
+A diferença principal seria que o MapLibre integra transições visuais diretamente ao sistema de estilo cartográfico, enquanto que o Leaflet depende de algumas funções auxiliares no seu código
+
+1.11 - Resumo e comparação visual direta
+
+| Característica                 | Leaflet                              | MapLibre GL JS                  |
+| ------------------------------ | ------------------------------------ | ------------------------------- |
+| Marcadores personalizados      | Excelente                            | Excelente                       |
+| HTML/CSS em marcadores         | Sim                                  | Sim                             |
+| Popups personalizados          | Sim                                  | Sim                             |
+| SVG                            | Sim                                  | Sim, por diferentes mecanismos  |
+| Canvas                         | Sim                                  | Renderização baseada em WebGL   |
+| GeoJSON                        | Sim                                  | Sim                             |
+| Camadas personalizadas         | Sim                                  | Sim                             |
+| Controle sobre tiles raster    | Depende do provedor                  | Sim, pode consumir raster       |
+| Controle sobre mapa vetorial   | Mais dependente da solução utilizada | Muito forte                     |
+| Estilo global do mapa          | Depende bastante dos tiles           | Nativo via Style Spec           |
+| Estilos condicionais aos dados | Possível via código/extensões        | Nativo via expressions          |
+| Estilos condicionais ao zoom   | Possível via código                  | Nativo via expressions          |
+| Controle de labels             | Limitado quando vêm rasterizados     | Muito alto com vector tiles     |
+| Tipografia cartográfica        | Dependente dos tiles                 | Altamente configurável          |
+| Ordem das camadas              | Panes / z-index                      | Ordem das style layers          |
+| Rotação                        | Sim                                  | Sim                             |
+| Inclinação/perspectiva         | Mais limitada                        | Muito mais integrada            |
+| Extrusão 3D                    | Não é foco nativo                    | Suportada                       |
+| Heatmap                        | Via plugins/extensões                | Tipo de layer nativo            |
+| Hillshade                      | Via soluções externas/extensões      | Tipo de layer nativo            |
+| Identidade visual cartográfica | Boa                                  | Excelente                       |
