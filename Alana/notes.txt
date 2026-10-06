@@ -1,11 +1,3 @@
-* Titulo:* Mapear e selecionar a biblioteca de mapas interativos de custo zero.
-* *Descrição:* Pesquisar e comparar o desempenho das bibliotecas de código aberto Leaflet.js e MapLibre GL, analisando suporte a marcadores estilizados, rendimento em dispositivos móveis e ausência de cobranças por consumo de requisições, com o intuito de definir a tecnologia ideal para a interface do mapa interativo.
-* *Entregável:* Relatório técnico comparativo com a indicação da biblioteca frontend escolhida.
-
-* Titulo:* Validar a camada de renderização do mapa e marcadores com o parceiro Henrich.
-* *Descrição:* Apresentar em reunião de alinhamento os protótipos de marcadores gráficos e o comportamento do mapa interativo utilizando a biblioteca selecionada, coletando o feedback do parceiro Henrich sobre a fluidez visual e usabilidade para assegurar alinhamento com a identidade do aplicativo.
-* *Entregável:* Ata de validação visual e lista de ajustes aprovada por Henrich.
-
 ## TAREFA 1 ESTUDO DE CASO E MAPEAMENTO DE TECNOLOGIAS ##
 
 ### PARTE 1 - DIFERENÇAS VISUAIS ###
@@ -133,6 +125,7 @@ A diferença principal seria que o MapLibre integra transições visuais diretam
 
 1.11 - Resumo e comparação visual direta
 
+===========================================================================================================
 | Característica                 | Leaflet                              | MapLibre GL JS                  |
 | ------------------------------ | ------------------------------------ | ------------------------------- |
 | Marcadores personalizados      | Excelente                            | Excelente                       |
@@ -156,3 +149,6 @@ A diferença principal seria que o MapLibre integra transições visuais diretam
 | Heatmap                        | Via plugins/extensões                | Tipo de layer nativo            |
 | Hillshade                      | Via soluções externas/extensões      | Tipo de layer nativo            |
 | Identidade visual cartográfica | Boa                                  | Excelente                       |
+===========================================================================================================
+
+### PARTE 2 - DESEMPENHO ###
