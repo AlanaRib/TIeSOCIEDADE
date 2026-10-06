@@ -11,14 +11,78 @@
 ### PARTE 1 - DIFERENÇAS VISUAIS ###
 
 1.1 - Contextualização
+
 Nem Leaflet nem MapLibre são, por si só, um “mapa pronto” com ruas, bairros, parques etc. As bibliotecas são responsáveis principalmente pela renderização e interação com os dados cartográficos.
 É perfeitamente possível ter um mapa visualmente sofisticado usando Leaflet e um mapa visualmente simples usando MapLibre. A diferença fundamental é como cada biblioteca permite construir e controlar essa aparência.
 O Leaflet trabalha tradicionalmente com uma composição de camadas, tiles e elementos HTML/SVG/Canvas. Já o MapLibre GL JS possui um sistema de estilos que descreve explicitamente quais dados devem ser desenhados, em que ordem e com quais propriedades visuais
 
 1.2 - Principal diferença: raster x vetorial
+
 Essa é provavelmente a primeira distinção que precisamos compreender.
 O Leaflet não exige um tipo específico de mapa base. Ele pode utilizar diferentes fontes de tiles e pode trabalhar com tiles raster, nos quais cada pedaço do mapa é entregue essencialmente como uma imagem.
 Ou seja, o navegador recebe imagens correspondentes às partes do mapa e as posiciona na tela. O Leaflet é deliberadamente provider-agnostic: não obriga o desenvolvedor a utilizar um determinado fornecedor de mapas.
 Visualmente, isso significa que a aparência do mapa base depende bastante de como o provedor produziu aquelas imagens.
-
 O MapLibre GL JS é construído para trabalhar com vector tiles e renderizá-los utilizando WebGL. A aparência do mapa é definida por um Style Specification, que descreve fontes, camadas e propriedades de renderização
+
+1.3 - Personalização da aparência do mapa
+
+#Leaflet
+ No Leaflet, uma das formas mais comuns de construir o mapa é adicionar uma TileLayer, ou seja, uma camada.
+ O Leaflet não determina como os tiles devem parecer. O estilo está, em grande parte, embutido nas imagens fornecidas pelo serviço de tiles.
+ Ou seja, o Leaflet depende muito da questão visual do próprio sistema de Tiles.
+ Se estivermos utilizando um conjunto tradicional de tiles raster, o Leaflet não pode simplesmente pegar a imagem e alterar somente a cor das ruas principais para azul, pois a imagem já chega renderizada.
+ Isso não significa que Leaflet não possa produzir mapas extremamente personalizados. Ele pode combinar diferentes camadas, overlays, SVG, Canvas etc. O ponto é que a personalização do mapa base depende muito mais da fonte cartográfica utilizada.
+ Então podemos imaginar essa diferença da seguinte forma:
+ Tile -> Parques azuis -> Leaflet lê a tile e interpreta os parques azuis, sem possibilidade de alteração
+
+#MapLibre
+ O estilo do mapa é um objeto estruturado, baseado na MapLibre Style Specification. Essa especificação define quais fontes e camadas existem e como elas devem ser desenhadas.
+ O que dá ao desenvolvedor maior controle sobre a aparência, de forma granular, pois as camadas podem representar por exemplo o background do mapa, que pode ser alterada.
+Podemos imaginar da seguinte forma:
+Tile -> Parques azuis -> MapLibre traz a opção de sobrescrever a cor para verde
+
+1.4 - Estilos dependentes dos dados para MapLibre
+
+A especificação do MapLibre possui expressões, que permitem que propriedades visuais dependam das características dos dados ou do estado da câmera.
+Em resumo, isso permite construir visualizações cartográficas que mudam de maneira inteligente conforme os dados e o nível de zoom.
+Conceitualmente, seria algo como
+se categoria = "exposição artística"
+    → marcador vermelho
+se categoria = "show musical"
+    → marcador azul
+
+1.5 - Marcadores personalizados para o Leaflet
+
+O Leaflet possui suporte direto para marcadores personalizados.
+Essa personalização permite definir, entre alguns outros detalhes: imagem, tamanho, sombra, posição da âncora e dimensões do ícone.
+Também existe uma função que permite trabalhar com um elemento HTML, o que abre bastante espaço para criatividade no projeto.
+Esta é uma das maiores vantagens do Leaflet, não apresentar uma limitação séria para os marcadores estilizados do UMURA.
+
+1.6 - Marcadores personalizados para o MapLibre
+
+O MapLibre também permite criar marcadores personalizados.
+A API Marker permite fornecer um elemento HTML personalizado para o marcador. Isso significa que também podemos fazer um marcador contido em uma <div> e controlar sua aparência utilizando CSS.
+Além disso, o MapLibre permite configurar propriedades como: posição da âncora, classe CSS, rotação, escala, popup associado e arraste.
+Portanto, para um marcador individual e altamente customizado, tanto o Leaflet quanto o MapLibre apresentam uma interface bastante personalizadas.
+
+1.7 - Ícones e símbolos
+
+No MapLibre existe uma categoria de camada chamada symbol, destinada a elementos como textos e símbolos.
+Além disso, o MapLibre possui mecanismos próprios para trabalhar com imagens, sprites e fontes dentro do sistema de estilos. A própria especificação de estilo possui propriedades como sprite e glyphs.
+Isso é particularmente útil para mapas que precisam possuir uma linguagem visual própria.
+
+1.8 Camadas e ordem visual
+
+Aqui as duas bibliotecas adotam abordagens diferentes.
+
+#Leaflet
+ O Leaflet possui um sistema de map panes, que determina a ordem em que os elementos aparecem.
+ Cada pane possui um z-index, e o desenvolvedor pode criar panes adicionais para controlar essa ordem.
+ O que nos permite fazer por exemplo
+  Mapa base -> Áreas -> Ruas -> Marcadores -> Tooltips -> Popup
+ E controlar explicitamente esse sistema.
+
+#MapLibre
+ No MapLibre, a ordem visual é uma característica do próprio Style Specification.
+ As layers possuem uma ordem dentro do estilo, e essa ordem determina como elas participam da renderização. A API também permite adicionar uma layer antes de outra.
+ Isso proporciona uma estrutura conceitualmente mais próxima de um sistema de composição cartográfica: background -> water -> land -> parks -> roads -> buildings -> labels -> application data
