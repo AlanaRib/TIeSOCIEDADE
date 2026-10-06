@@ -151,4 +151,15 @@ A diferença principal seria que o MapLibre integra transições visuais diretam
 | Identidade visual cartográfica | Boa                                  | Excelente                       |
 ===========================================================================================================
 
-### PARTE 2 - DESEMPENHO ###
+### PARTE 2 - DESEMPENHO E CUSTO ###
+
+Em relação ao custo e ao desempenho, ambas as bibliotecas, apesar de diferentes, tem o mesmo conceito.
+
+#Custo
+ Ambas são gratuitas, o custo é totalmente definido pelos outros pontos do projeto, como o provedor de tiles, por exemplo.
+
+#Desempenho 
+ O desempenho de uma biblioteca de mapas depende da quantidade de elementos, do tipo de geometria, da forma como os dados são renderizados, do dispositivo utilizado e da própria implementação da aplicação.
+ Portanto, quanto maior a quantidade de elementos (popups, marcadores...), mais pesado fica o projeto como um todo.
+
+A definição de qual tecnologia será utilizada pode ser feita levando em consideração somente qual adaptação visual será mais apropriada para o projeto.
