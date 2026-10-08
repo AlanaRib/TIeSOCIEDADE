@@ -1,0 +1,24 @@
+#### VALORES 
+
+## HOSPEDAGEM
+
+1.0 - O que é a contratação e qual a importância dela par ao projeto
+ A hospedagem não será simplesmente um lugar para colocar o site. A ideia é que o servidor seja responsável por manter a infraestrutura necessária para a aplicação funcionando na internet.
+ Ou seja, uma única VPS pode inicialmente concentrar o front e backend da aplicação, o banco de dados, o N8N (Sistema de automação), o Docker, o servidor web, certificado HTTPS e ferramentas auxiliares
+ Existe a preferência por uma hospedagem porque evita contratar um serviço independente para cada componente, auxiliando financeiramente o projeto.
+ Além disso, pensando futuramente, se tornaria inviável para o projeto que ele rode inteiramente em um computador pessoal. Portanto, é necessário um serviço acessível o tempo todo.
+ Por que então uma VPS (Virtual Private Server)? Bom, o objetivo não é somente hospedar páginas. Precisamos de um backend forte e de um banco de dados completo, por exemplo.
+ Na prática, uma VPS é como ter um computador completo em nuvem, disponível e funcionando 24 horas por dia. E isso dá muito mais liberdade do que uma hospedagem tradicional
+
+1.1 - Custo
+ Por questão de já conehcermos e já estarmos cientes do preço e da qualidade do serviço, indicamos a Hostinger
+ A página atual da Hostinger para VPS com n8n apresenta os seguintes planos:
+ | Plano     |  vCPU |      RAM |       NVMe |    Banda | Preço promocional |    Renovação |
+ | --------- | ----: | -------: | ---------: | -------: | ----------------: | -----------: |
+ | KVM 1     |     1 |     4 GB |      50 GB |     4 TB |      R$ 29,99/mês |     R$ 59,99 |
+ | KVM 2     |     2 |     8 GB |     100 GB |     8 TB |      R$ 43,99/mês |     R$ 77,99 |
+ | KVM 4     |     4 |    16 GB |     200 GB |    16 TB |      R$ 59,99/mês |    R$ 149,99 |
+ | KVM 8     |     8 |    32 GB |     400 GB |    32 TB |     R$ 119,99/mês |    R$ 259,99 |
+ Para a renovação anual, os planos tem um ajuste de valor.
+ Por questão de processamento de diversos dados, considerando que cada consulta do usuário pode fazer de 4 a 6 consultas a API, indicamos a KVM2.
+ Existem diversos outros fornecedores de VPS, como por exemplo a Locaweb, a KingHost e a DigitalOcean, porém por preços similares, os planos se tornam diferentes

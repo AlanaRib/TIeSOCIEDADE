@@ -163,3 +163,18 @@ Em relação ao custo e ao desempenho, ambas as bibliotecas, apesar de diferente
  Portanto, quanto maior a quantidade de elementos (popups, marcadores...), mais pesado fica o projeto como um todo.
 
 A definição de qual tecnologia será utilizada pode ser feita levando em consideração somente qual adaptação visual será mais apropriada para o projeto.
+
+####EXEMPLOS
+
+##Leaflet
+
+Leaflet - https://leafletjs.com/examples.html
+O próprio site do Leaflet traz alguns exemplos da visualização de mapas feitos usando sua biblioteca.
+
+OSM - https://www.openstreetmap.org/
+O OSM utiliza Leaflet para a visualização padrão do seu inicial.
+
+
+
+
+
