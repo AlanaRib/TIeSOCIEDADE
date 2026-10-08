@@ -169,12 +169,19 @@ A definição de qual tecnologia será utilizada pode ser feita levando em consi
 ##Leaflet
 
 Leaflet - https://leafletjs.com/examples.html
-O próprio site do Leaflet traz alguns exemplos da visualização de mapas feitos usando sua biblioteca.
 
 OSM - https://www.openstreetmap.org/
-O OSM utiliza Leaflet para a visualização padrão do seu inicial.
 
+Wiki - https://wikimapia.org/
 
+City-Data - https://www.city-data.com/
 
+##MapLibre
 
+Bing Maps - https://www.bing.com/maps
 
+Flix Bus - https://www.flixbus.com/bus-routes
+
+National Park Service - https://www.nps.gov/planyourvisit/maps.htm
+
+Open Historical Map - https://www.openhistoricalmap.org/
