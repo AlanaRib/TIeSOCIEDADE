@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Descubra eventos da cena underground perto de você no mapa da UMURA.">
+    <title>UMURA | Eventos próximos de você</title>
+    <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@6.17.0/dist/maplibre-gl.css">
+    <link rel="stylesheet" href="./CSS/style.css">
+    <script type="module" src="./JS/app.js"></script>
+</head>
+<body>
+    <header class="cabecalho">
+        <p class="marca">UMURA</p>
+        <h1>Eventos próximos de você</h1>
+        <p>Descubra o que está acontecendo na cena underground.</p>
+    </header>
+    <main class="explorador">
+        <div class="barra-mapa">
+            <p id="status-mapa" role="status">Preparando o mapa…</p>
+            <button id="explorar-mapa" type="button" hidden>Explorar o mapa</button>
+        </div>
+        <div class="area-mapa">
+            <div id="mapa" role="region" aria-label="Mapa de eventos"></div>
+            <section id="cartao-evento" class="cartao-evento" aria-labelledby="titulo-evento" hidden>
+                <button id="fechar-evento" type="button">Fechar detalhes</button>
+                <h2 id="titulo-evento"></h2>
+                <p><time id="data-evento"></time></p>
+                <p id="local-evento"></p>
+                <button id="ver-rota" type="button" aria-controls="opcoes-rota" aria-expanded="false">Ver rota</button>
+                <fieldset id="opcoes-rota" hidden>
+                    <legend>Como você quer chegar?</legend>
+                    <p id="origem-rota"></p>
+                    <button id="rota-a-pe" type="button">A pé</button>
+                    <button id="rota-de-carro" type="button">De carro</button>
+                </fieldset>
+                <p id="status-rota" role="status"></p>
+            </section>
+        </div>
+        <noscript>
+            <p>Ative o JavaScript para explorar o mapa e calcular rotas.</p>
+        </noscript>
+    </main>
+    <dialog id="permissao-localizacao" aria-labelledby="titulo-localizacao"
+        aria-describedby="descricao-localizacao termos-localizacao">
+        <h2 id="titulo-localizacao">Podemos usar sua localização?</h2>
+        <p id="descricao-localizacao">
+            Use sua localização para descobrir eventos em até 3 km de você.
+            Você também pode explorar o mapa sem compartilhar sua posição.
+        </p>
+        <p class="aviso-localizacao">
+            <small id="termos-localizacao">
+                Ao escolher “Usar minha localização”, você concorda com os Termos de Uso
+                e a Política de Privacidade da UMURA.
+            </small>
+        </p>
+        <div class="acoes-localizacao">
+            <button id="usar-localizacao" type="button">Usar minha localização</button>
+            <button id="continuar-sem-localizacao" type="button">Continuar sem localização</button>
+        </div>
+    </dialog>
+</body>
+</html>

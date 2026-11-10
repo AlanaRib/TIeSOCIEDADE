@@ -1,0 +1,73 @@
+{
+    "type": "FeatureCollection",
+    "features": [
+        {
+            "type": "Feature",
+            "id": "demo-01",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -49.2745,
+                    -25.4295
+                ]
+            },
+            "properties": {
+                "titulo": "Noite Subsolo",
+                "inicio": "2026-11-20T21:00:00-03:00",
+                "nome_local": "Espaço Subsolo",
+                "local_liberado": true
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "demo-02",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -49.2689,
+                    -25.432
+                ]
+            },
+            "properties": {
+                "titulo": "Circuito Independente",
+                "inicio": "2026-11-21T18:00:00-03:00",
+                "nome_local": "Galpão Independente",
+                "local_liberado": true
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "demo-03",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -49.2517,
+                    -25.4429
+                ]
+            },
+            "properties": {
+                "titulo": "Frequência Alternativa",
+                "inicio": "2026-11-28T20:00:00-03:00",
+                "nome_local": "Estúdio Frequência",
+                "local_liberado": true
+            }
+        },
+        {
+            "type": "Feature",
+            "id": "demo-04",
+            "geometry": {
+                "type": "Point",
+                "coordinates": [
+                    -49.2798,
+                    -25.4657
+                ]
+            },
+            "properties": {
+                "titulo": "Sessão Independente — Água Verde",
+                "inicio": "2026-11-27T20:00:00-03:00",
+                "nome_local": "Espaço Água Verde (local fictício)",
+                "local_liberado": true
+            }
+        }
+    ]
+}
