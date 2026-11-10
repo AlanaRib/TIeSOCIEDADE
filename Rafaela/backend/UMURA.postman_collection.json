@@ -1,0 +1,293 @@
+{
+  "info": {
+    "name": "UMURA — Backend n8n (persistência pendente)",
+    "description": "Ajuste baseUrl para sua instância. Antes de executar, importe os workflows. Cadastro válido deve retornar 503 e não grava nada. admin_token é só para teste administrativo, não para frontend.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://SEU-N8N/webhook/umura"
+    },
+    {
+      "key": "admin_token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "Listagem pública (resultado pode estar vazio)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/eventos"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Busca por nome e data",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/eventos?q=Subsolo&data=2026-11-20"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consulta em até 3 km",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/eventos/consultar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"origem\": [\n    -49.2745,\n    -25.4295\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Origem inválida",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/eventos/consultar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"origem\": [\n    \"-49\",\n    \"-25\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Filtro de data inválido",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/eventos?data=2026-02-30"
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consulta explícita Photon",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/localizacoes/consultar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"endereco\": \"Praça Tiradentes, Curitiba\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Endereço vazio",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": "{{baseUrl}}/localizacoes/consultar",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"endereco\": \" \"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cadastro válido — NÃO SALVA, persistência pendente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-UMURA-Admin",
+            "value": "{{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/eventos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"Feature\",\n  \"geometry\": {\n    \"type\": \"Point\",\n    \"coordinates\": [\n      -49.2745,\n      -25.4295\n    ]\n  },\n  \"properties\": {\n    \"titulo\": \"Evento de teste\",\n    \"inicio\": \"2026-11-20T21:00:00-03:00\",\n    \"local_liberado\": false\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 503', () => pm.response.to.have.status(503));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "Cadastro inválido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "X-UMURA-Admin",
+            "value": "{{admin_token}}",
+            "type": "text"
+          }
+        ],
+        "url": "{{baseUrl}}/eventos",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"type\": \"Feature\",\n  \"geometry\": null,\n  \"properties\": {\n    \"titulo\": \"Evento de teste\",\n    \"inicio\": \"2026-11-20T21:00:00-03:00\",\n    \"local_liberado\": false\n  }\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 400', () => pm.response.to.have.status(400));",
+              "pm.test('Resposta JSON', () => pm.response.json());"
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}

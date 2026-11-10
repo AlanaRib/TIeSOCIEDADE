@@ -1,3 +1,5 @@
+import { backendConfigurado, consultarAPI } from "./api.js";
+
 const URL_BUSCA = "https://photon.komoot.io/api/";
 const TEMPO_LIMITE_MS = 10000;
 const LIMITE_RESULTADOS = 5;
@@ -54,6 +56,19 @@ export async function buscarEnderecos(endereco, { signal } = {}) {
     }
 
     signal?.throwIfAborted();
+
+    if (backendConfigurado()) {
+        const dados = await consultarAPI("localizacoes/consultar", {
+            method: "POST", body: { endereco: consulta }, signal,
+        });
+        if (!Array.isArray(dados?.resultados) || !dados.resultados.every(item =>
+            typeof item?.rotulo === "string" && Array.isArray(item.coordenadas)
+            && item.coordenadas.length === 2 && item.coordenadas.every(Number.isFinite)
+            && Math.abs(item.coordenadas[0]) <= 180 && Math.abs(item.coordenadas[1]) <= 90)) {
+            throw new Error("O backend retornou endereços inválidos.");
+        }
+        return dados.resultados;
+    }
 
     const url = new URL(URL_BUSCA);
     url.searchParams.set("q", consulta);

@@ -1,0 +1,118 @@
+{
+  "name": "UMURA - CADASTRO PENDENTE DE PERSISTENCIA",
+  "nodes": [
+    {
+      "id": "1836e540-2f39-493e-afd1-a147e0576702",
+      "name": "RECEBE REQUISICAO",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "umura/eventos",
+        "responseMode": "responseNode",
+        "authentication": "headerAuth",
+        "options": {
+          "allowedOrigins": "https://alanarib.github.io"
+        }
+      },
+      "position": [
+        0,
+        0
+      ],
+      "webhookId": "752769b1-d4b7-4b99-a8b0-2c9230b7b4ba"
+    },
+    {
+      "id": "84132344-8527-4df1-a4bf-78d01b0e94ba",
+      "name": "VALIDA ENTRADA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "jsCode": "// Compartilhado pelos testes e pelo código incorporado aos workflows n8n.\nconst RAIO_METROS = 3000;\nconst DURACAO_PADRAO_MS = 6 * 60 * 60 * 1000;\n\nclass ErroAPI extends Error {\n    constructor(httpCode, codigo, message) {\n        super(message);\n        this.httpCode = httpCode;\n        this.codigo = codigo;\n    }\n}\n\nfunction falhar(message) {\n    throw new ErroAPI(400, \"ENTRADA_INVALIDA\", message);\n}\n\nfunction objeto(value) {\n    return value !== null && typeof value === \"object\" && !Array.isArray(value);\n}\n\nfunction texto(value, campo, min = 1, max = 250) {\n    if (typeof value !== \"string\" || /[\\u0000-\\u001f\\u007f]/.test(value)) {\n        falhar(`O campo ${campo} deve ser um texto válido.`);\n    }\n    const normalizado = value.normalize(\"NFC\").trim().replace(/\\s+/g, \" \");\n    if (normalizado.length < min || normalizado.length > max) {\n        falhar(`O campo ${campo} deve ter entre ${min} e ${max} caracteres.`);\n    }\n    return normalizado;\n}\n\nfunction coordenadasValidas(value) {\n    return Array.isArray(value) && value.length === 2\n        && value.every(Number.isFinite)\n        && Math.abs(value[0]) <= 180 && Math.abs(value[1]) <= 90;\n}\n\nfunction diaValido(value) {\n    if (typeof value !== \"string\" || !/^\\d{4}-\\d{2}-\\d{2}$/.test(value)) return false;\n    const data = new Date(`${value}T00:00:00Z`);\n    return Number.isFinite(data.getTime()) && data.toISOString().slice(0, 10) === value;\n}\n\nfunction instante(value) {\n    if (typeof value !== \"string\") return NaN;\n    const m = /^(\\d{4}-\\d{2}-\\d{2})T(\\d{2}):(\\d{2}):(\\d{2})(?:\\.\\d{1,3})?(Z|[+-]\\d{2}:\\d{2})$/.exec(value);\n    if (!m || !diaValido(m[1]) || +m[2] > 23 || +m[3] > 59 || +m[4] > 59) return NaN;\n    return Date.parse(value);\n}\n\nfunction normalizarFiltro(entrada = {}, proximidade = false) {\n    if (!objeto(entrada)) falhar(\"Envie um objeto com os filtros.\");\n    const permitidos = [\"categoria\", \"data\", \"q\", ...(proximidade ? [\"origem\"] : [])];\n    if (Object.keys(entrada).some(k => !permitidos.includes(k))) {\n        falhar(\"Filtro desconhecido. Use categoria, data, q e, na consulta por proximidade, origem.\");\n    }\n    const filtro = {};\n    for (const campo of [\"categoria\", \"q\"]) {\n        if (entrada[campo] !== undefined) filtro[campo] = texto(entrada[campo], campo).toLocaleLowerCase(\"pt-BR\");\n    }\n    if (entrada.data !== undefined) {\n        if (!diaValido(entrada.data)) falhar(\"Use uma data válida no formato AAAA-MM-DD.\");\n        filtro.data = entrada.data;\n    }\n    if (proximidade) {\n        if (!coordenadasValidas(entrada.origem)) falhar(\"Informe origem como [longitude, latitude], com números válidos.\");\n        filtro.origem = entrada.origem;\n    }\n    return filtro;\n}\n\nfunction distanciaMetros(origem, destino) {\n    const rad = Math.PI / 180;\n    const a = Math.sin((destino[1] - origem[1]) * rad / 2) ** 2\n        + Math.cos(origem[1] * rad) * Math.cos(destino[1] * rad)\n        * Math.sin((destino[0] - origem[0]) * rad / 2) ** 2;\n    return 2 * 6371008.8 * Math.asin(Math.sqrt(Math.min(1, a)));\n}\n\nfunction eventoPublico(evento, agora) {\n    const p = evento?.properties;\n    if (evento?.type !== \"Feature\" || !objeto(p) || p.local_liberado !== true\n        || evento.geometry?.type !== \"Point\" || !coordenadasValidas(evento.geometry.coordinates)) return null;\n    const inicio = instante(p.inicio);\n    const fim = p.fim == null ? inicio + DURACAO_PADRAO_MS : instante(p.fim);\n    if (!Number.isFinite(inicio) || !Number.isFinite(fim) || fim < inicio || fim < agora) return null;\n    if (typeof p.titulo !== \"string\" || !p.titulo.trim()) return null;\n    const properties = { titulo: p.titulo, inicio: p.inicio, local_liberado: true };\n    for (const campo of [\"fim\", \"nome_local\", \"endereco\", \"descricao\", \"categoria\"]) {\n        if (typeof p[campo] === \"string\") properties[campo] = p[campo];\n    }\n    if (Array.isArray(p.categorias)) properties.categorias = p.categorias.filter(c => typeof c === \"string\");\n    const saida = { type: \"Feature\", geometry: { type: \"Point\", coordinates: [...evento.geometry.coordinates] }, properties };\n    if ([\"string\", \"number\"].includes(typeof evento.id)) saida.id = evento.id;\n    return saida;\n}\n\nconst formatoDia = new Intl.DateTimeFormat(\"en-CA\", {\n    timeZone: \"America/Sao_Paulo\", year: \"numeric\", month: \"2-digit\", day: \"2-digit\",\n});\n\nfunction filtrarColecao(colecao, filtro, agora = Date.now()) {\n    if (colecao?.type !== \"FeatureCollection\" || !Array.isArray(colecao.features)) {\n        throw new ErroAPI(502, \"FONTE_INVALIDA\", \"A fonte de eventos retornou um GeoJSON inválido.\");\n    }\n    const features = [];\n    for (const bruto of colecao.features) {\n        const evento = eventoPublico(bruto, agora);\n        if (!evento) continue;\n        const p = evento.properties;\n        if (filtro.categoria && ![p.categoria, ...(p.categorias || [])]\n            .some(c => typeof c === \"string\" && c.toLocaleLowerCase(\"pt-BR\") === filtro.categoria)) continue;\n        if (filtro.data && formatoDia.format(new Date(p.inicio)) !== filtro.data) continue;\n        if (filtro.q && ![p.titulo, p.nome_local].some(s => typeof s === \"string\"\n            && s.toLocaleLowerCase(\"pt-BR\").includes(filtro.q))) continue;\n        if (filtro.origem) {\n            const distancia = distanciaMetros(filtro.origem, evento.geometry.coordinates);\n            if (distancia > RAIO_METROS) continue;\n            evento.properties.distancia_metros = Math.round(distancia);\n        }\n        features.push(evento);\n    }\n    // Preserva a ordem da fonte. O ranking pertence à outra entrega.\n    return { type: \"FeatureCollection\", features, meta: {\n        quantidade: features.length, fonte: \"geojson-prototipo\",\n        ...(filtro.origem ? { raio_metros: RAIO_METROS, medida: \"linha-reta\" } : {}),\n    } };\n}\n\nfunction validarCadastro(entrada) {\n    if (!objeto(entrada) || entrada.type !== \"Feature\" || !objeto(entrada.properties)) {\n        falhar(\"Envie um evento GeoJSON do tipo Feature.\");\n    }\n    if (Object.keys(entrada).some(k => ![\"type\", \"geometry\", \"properties\"].includes(k))) {\n        falhar(\"Use somente type, geometry e properties; o identificador será atribuído pelo backend.\");\n    }\n    if (entrada.geometry?.type !== \"Point\" || !coordenadasValidas(entrada.geometry.coordinates)) {\n        falhar(\"A geometria deve ser Point, com coordinates [longitude, latitude].\");\n    }\n    const p = entrada.properties;\n    const permitidos = [\"titulo\", \"inicio\", \"fim\", \"nome_local\", \"endereco\", \"descricao\", \"categoria\", \"categorias\", \"local_liberado\"];\n    if (Object.keys(p).some(k => !permitidos.includes(k))) falhar(\"Há campos de evento ainda não previstos no contrato.\");\n    const titulo = texto(p.titulo, \"titulo\", 3, 160);\n    if (!Number.isFinite(instante(p.inicio))) falhar(\"Informe inicio em ISO 8601, incluindo o fuso horário.\");\n    if (p.fim != null && (!Number.isFinite(instante(p.fim)) || instante(p.fim) < instante(p.inicio))) {\n        falhar(\"O fim deve ser uma data válida e igual ou posterior ao início.\");\n    }\n    if (p.local_liberado !== undefined && typeof p.local_liberado !== \"boolean\") falhar(\"local_liberado deve ser booleano.\");\n    const properties = { titulo, inicio: p.inicio, local_liberado: p.local_liberado ?? false };\n    if (p.fim != null) properties.fim = p.fim;\n    for (const campo of [\"nome_local\", \"endereco\", \"descricao\", \"categoria\"]) {\n        if (p[campo] !== undefined) properties[campo] = texto(p[campo], campo, 1, campo === \"descricao\" ? 4000 : 250);\n    }\n    if (p.categorias !== undefined) {\n        if (!Array.isArray(p.categorias) || p.categorias.length > 10) falhar(\"Envie até dez categorias.\");\n        properties.categorias = [...new Set(p.categorias.map(c => texto(c, \"categorias\", 1, 80)))];\n    }\n    return { type: \"Feature\", geometry: { type: \"Point\", coordinates: [...entrada.geometry.coordinates] }, properties };\n}\n\nfunction validarEndereco(body) {\n    if (!objeto(body)) falhar(\"Envie um objeto JSON com endereco.\");\n    return texto(body.endereco, \"endereco\", 3, 250);\n}\n\nfunction normalizarPhoton(dados) {\n    if (dados?.type !== \"FeatureCollection\" || !Array.isArray(dados.features)) {\n        throw new ErroAPI(502, \"PROVEDOR_INVALIDO\", \"O serviço retornou uma resposta de endereço inválida.\");\n    }\n    return dados.features.slice(0, 5).flatMap(item => {\n        if (item?.geometry?.type !== \"Point\" || !coordenadasValidas(item.geometry.coordinates)) return [];\n        const p = item.properties ?? {};\n        const rua = p.street || p.name;\n        const logradouro = rua && p.housenumber ? `${rua}, ${p.housenumber}` : rua;\n        const partes = [p.name, logradouro, p.district || p.locality, p.city || p.county, p.state]\n            .filter(s => typeof s === \"string\" && s.trim());\n        const rotulo = [...new Set(partes)].join(\" · \");\n        return rotulo ? [{ rotulo, coordenadas: [...item.geometry.coordinates] }] : [];\n    });\n}\n\nfunction erroResposta(erro) {\n    return { httpCode: erro instanceof ErroAPI ? erro.httpCode : 503, response: {\n        erro: { codigo: erro instanceof ErroAPI ? erro.codigo : \"SERVICO_INDISPONIVEL\",\n            mensagem: erro instanceof ErroAPI ? erro.message : \"O serviço está temporariamente indisponível.\" },\n    } };\n}\n\ntry {\n        const evento = validarCadastro($input.first().json.body);\n        // Ponto de integração: inserir a persistência real depois da validação.\n        // Nenhum INSERT ou sucesso fictício enquanto o esquema não for fornecido.\n        return [{json:{eventoValidado:evento,httpCode:503,response:{erro:{codigo:'PERSISTENCIA_NAO_CONFIGURADA',mensagem:'O cadastro ainda não está integrado ao banco. Nenhum evento foi salvo.'}}}}];\n    } catch (erro) { return [{json:erroResposta(erro)}]; }"
+      },
+      "position": [
+        240,
+        0
+      ]
+    },
+    {
+      "id": "809be65b-d8a5-4dfc-af2a-1b5a66dc058c",
+      "name": "RESPONDE API",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response }}",
+        "options": {
+          "responseCode": "={{ $json.httpCode }}",
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Cache-Control",
+                "value": "no-store"
+              },
+              {
+                "name": "X-Content-Type-Options",
+                "value": "nosniff"
+              }
+            ]
+          }
+        }
+      },
+      "position": [
+        1100,
+        0
+      ]
+    },
+    {
+      "id": "2882b122-1a55-4516-a9c7-c84fdb0b1a9c",
+      "name": "LEIA ANTES DE ATIVAR",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "parameters": {
+        "height": 300,
+        "width": 650,
+        "content": "## Configuração\nCORS: https://alanarib.github.io (origem, sem caminho do repositório). Para Live Server ajuste ao endereço local durante os testes. Não use o domínio de um n8n de outro projeto por suposição.\nAs execuções não são salvas por este workflow; revise também logs de infraestrutura. Teste a importação e o preflight OPTIONS na sua instância.\n## INCOMPLETO: não grava eventos\nSelecione uma credencial Header Auth no Webhook antes de testar. Uso administrativo via Postman/curl: não coloque um segredo fixo no GitHub Pages. Entrada inválida: HTTP 400. Entrada válida: HTTP 503 PERSISTENCIA_NAO_CONFIGURADA. Nunca retorna 201 enquanto não houver gravação confirmada.\nO esquema SQL não está neste repositório. A próxima etapa é ligar o evento validado aos campos existentes e identificar o produtor pela autenticação do servidor. Este workflow não substitui autenticação de usuários/produtores nem autorização por evento."
+      },
+      "position": [
+        0,
+        -400
+      ]
+    }
+  ],
+  "connections": {
+    "RECEBE REQUISICAO": {
+      "main": [
+        [
+          {
+            "node": "VALIDA ENTRADA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "VALIDA ENTRADA": {
+      "main": [
+        [
+          {
+            "node": "RESPONDE API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Sao_Paulo",
+    "executionTimeout": 30,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "saveExecutionProgress": false
+  }
+}

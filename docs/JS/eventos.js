@@ -1,3 +1,5 @@
+import { backendConfigurado, consultarAPI } from "./api.js";
+
 const URL_EVENTOS = new URL("../DADOS/eventos.geojson", import.meta.url);
 const RAIO_BUSCA_METROS = 3000;
 const RAIO_TERRA_METROS = 6371008.8;
@@ -50,19 +52,36 @@ function distanciaEmMetros(origem, destino) {
 }
 
 export async function carregarEventos() {
-    const resposta = await fetch(URL_EVENTOS);
+    let dados;
+    if (backendConfigurado()) {
+        dados = await consultarAPI("eventos");
+    } else {
+        const resposta = await fetch(URL_EVENTOS);
 
-    if (!resposta.ok) {
-        throw new Error(`Não foi possível carregar os eventos (HTTP ${resposta.status}).`);
+        if (!resposta.ok) {
+            throw new Error(`Não foi possível carregar os eventos (HTTP ${resposta.status}).`);
+        }
+        dados = await resposta.json();
     }
 
-    const dados = await resposta.json();
     if (dados?.type !== "FeatureCollection" || !Array.isArray(dados.features)) {
         throw new Error("O arquivo de eventos precisa ser um FeatureCollection GeoJSON.");
     }
 
     const agora = Date.now();
     return dados.features.filter((evento) => eventoVisivel(evento, agora));
+}
+
+// Pronto para o consumidor que desejar filtrar no servidor. A tela atual mantém
+// o filtro local e a exploração do mapa, sem enviar o GPS ao backend nesta etapa.
+export async function consultarEventosNoBackend({ origem, categoria, data, q, signal } = {}) {
+    const filtros = Object.fromEntries(Object.entries({ origem, categoria, data, q })
+        .filter(([, valor]) => valor !== undefined));
+    const dados = await consultarAPI("eventos/consultar", { method: "POST", body: filtros, signal });
+    if (dados?.type !== "FeatureCollection" || !Array.isArray(dados.features)) {
+        throw new Error("O backend retornou uma lista de eventos inválida.");
+    }
+    return dados;
 }
 
 export function filtrarEventosProximos(eventos, origem) {

@@ -1,1 +1,6 @@
+# Entregas Rafaela — UMURA
 
+Backend n8n, contratos, workflows e testes: [backend/README.md](backend/README.md).
+
+Consulta de eventos, filtro de 3 km e Photon implementados. Cadastro ainda
+depende de integração ao banco existente. Rotas permanecem no módulo frontend.

@@ -1,5 +1,17 @@
 # TIeSOCIEDADE
 Repositório criado para compartilhamento de arquivos referentes ao projeto de TI e Sociedade, da Universidade Positivo.
+
+## Integração backend — UMURA
+
+A implementação inicial de backend n8n está em
+[Rafaela/backend/README.md](Rafaela/backend/README.md), com workflows de consulta
+de eventos, filtro de 3 km, Photon, contratos e testes. A integração PostgreSQL
+e a gravação de eventos ainda estão pendentes. O protótipo continua estático
+até configurar a URL da API em `docs/JS/configuracao.js`.
+
+O planejamento histórico abaixo menciona Nominatim; o serviço utilizado pelo
+protótipo e por esta integração é **Photon**, conforme a stack atual.
+
 Aqui está o plano de produção das tarefas do projeto, estruturado com foco na arquitetura técnica, backend e conformidade do sistema de geolocalização de eventos locais.
 
 # PANEJAMENTO DE ATIVIDADES
