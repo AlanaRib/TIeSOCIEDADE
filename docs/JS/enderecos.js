@@ -2,6 +2,7 @@ const URL_BUSCA = "https://photon.komoot.io/api/";
 const TEMPO_LIMITE_MS = 10000;
 const LIMITE_RESULTADOS = 5;
 
+// O centro de Curitiba dá preferência aos resultados da região.
 const REFERENCIA_BUSCA = {
     latitude: -25.4284,
     longitude: -49.2733,
@@ -16,6 +17,7 @@ function montarResultado(item) {
     }
 
     const [longitude, latitude] = coordenadas;
+
     if (
         !Number.isFinite(longitude) ||
         !Number.isFinite(latitude) ||
@@ -40,15 +42,20 @@ function montarResultado(item) {
     ].filter(Boolean);
 
     const rotulo = [...new Set(partes)].join(" · ");
+
     if (!rotulo) {
         return null;
     }
 
-    return { rotulo, coordenadas: [longitude, latitude] };
+    return {
+        rotulo,
+        coordenadas: [longitude, latitude],
+    };
 }
 
 export async function buscarEnderecos(endereco, { signal } = {}) {
     const consulta = typeof endereco === "string" ? endereco.trim() : "";
+
     if (!consulta) {
         throw new TypeError("Digite um endereço para buscar.");
     }
@@ -62,23 +69,32 @@ export async function buscarEnderecos(endereco, { signal } = {}) {
     url.searchParams.set("lon", String(REFERENCIA_BUSCA.longitude));
 
     const tempoLimite = AbortSignal.timeout(TEMPO_LIMITE_MS);
-    const sinalBusca = signal ? AbortSignal.any([signal, tempoLimite]) : tempoLimite;
+    const sinalBusca = signal
+        ? AbortSignal.any([signal, tempoLimite])
+        : tempoLimite;
+
     let dados;
 
     try {
         const resposta = await fetch(url, { signal: sinalBusca });
+
         if (!resposta.ok) {
             throw new Error(`HTTP ${resposta.status}`);
         }
+
         dados = await resposta.json();
     } catch (erro) {
         if (signal?.aborted) {
             throw erro;
         }
+
         if (tempoLimite.aborted) {
             throw new Error("A busca demorou demais. Tente novamente.");
         }
-        throw new Error("Não foi possível buscar o endereço agora.", { cause: erro });
+
+        throw new Error("Não foi possível buscar o endereço agora.", {
+            cause: erro,
+        });
     }
 
     if (dados?.type !== "FeatureCollection" || !Array.isArray(dados.features)) {

@@ -6,10 +6,7 @@
             "id": "demo-01",
             "geometry": {
                 "type": "Point",
-                "coordinates": [
-                    -49.2745,
-                    -25.4295
-                ]
+                "coordinates": [-49.2745, -25.4295]
             },
             "properties": {
                 "titulo": "Noite Subsolo",
@@ -23,10 +20,7 @@
             "id": "demo-02",
             "geometry": {
                 "type": "Point",
-                "coordinates": [
-                    -49.2689,
-                    -25.432
-                ]
+                "coordinates": [-49.2689, -25.4320]
             },
             "properties": {
                 "titulo": "Circuito Independente",
@@ -40,10 +34,7 @@
             "id": "demo-03",
             "geometry": {
                 "type": "Point",
-                "coordinates": [
-                    -49.2517,
-                    -25.4429
-                ]
+                "coordinates": [-49.2517, -25.4429]
             },
             "properties": {
                 "titulo": "Frequência Alternativa",
@@ -57,10 +48,7 @@
             "id": "demo-04",
             "geometry": {
                 "type": "Point",
-                "coordinates": [
-                    -49.2798,
-                    -25.4657
-                ]
+                "coordinates": [-49.2798, -25.4657]
             },
             "properties": {
                 "titulo": "Sessão Independente — Água Verde",

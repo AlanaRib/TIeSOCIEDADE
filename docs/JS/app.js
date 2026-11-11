@@ -1,5 +1,6 @@
 import { buscarEnderecos } from "./enderecos.js";
 import { carregarEventos, filtrarEventosProximos } from "./eventos.js";
+import { obterMelhorLocalizacao } from "./localizacao.js";
 import { calcularRota } from "./rotas.js";
 
 const URL_MAPLIBRE =
@@ -22,6 +23,7 @@ const origemRota = document.querySelector("#origem-rota");
 const statusRota = document.querySelector("#status-rota");
 const botaoAPe = document.querySelector("#rota-a-pe");
 const botaoDeCarro = document.querySelector("#rota-de-carro");
+let consultaLocalizacao = null;
 
 const formatoData = new Intl.DateTimeFormat("pt-BR", {
     dateStyle: "long",
@@ -75,7 +77,7 @@ function criarBuscaEndereco() {
 function criarCartao(mapa, Popup, coordenadas, desenharRota, limparRota) {
     const popup = new Popup({
         anchor: "bottom",
-        offset: 42,
+        offset: 20,
         closeButton: false,
         closeOnClick: false,
         focusAfterOpen: false,
@@ -88,14 +90,17 @@ function criarCartao(mapa, Popup, coordenadas, desenharRota, limparRota) {
     botaoAlterarOrigem.type = "button";
     botaoAlterarOrigem.textContent = "Alterar endereço";
 
-    const creditos = document.createElement("p");
+    const rodapeMapa = document.createElement("p");
+    const creditos = document.createElement("small");
     const fonteRota = document.createElement("a");
     const corrigirMapa = document.createElement("a");
     fonteRota.href = "https://routing.openstreetmap.de/about.html";
     fonteRota.textContent = "OSRM / OpenStreetMap";
+    corrigirMapa.href = "https://www.openstreetmap.org/fixthemap";
     corrigirMapa.textContent = "Corrigir o mapa";
     creditos.append("Roteamento por ", fonteRota, " · ", corrigirMapa);
-    opcoesRota.append(creditos);
+    rodapeMapa.append(creditos);
+    containerMapa.parentElement.after(rodapeMapa);
 
     botaoVerRota.hidden = true;
     tituloEvento.after(busca.formulario, opcoesRota, botaoAlterarOrigem, statusRota);
@@ -301,11 +306,8 @@ function criarCartao(mapa, Popup, coordenadas, desenharRota, limparRota) {
 
 function mostrarMarcadores(mapa, Marker, eventos, abrirCartao) {
     for (const evento of eventos) {
-        const marcador = new Marker({ color: "#ff5a3c" })
-            .setLngLat(evento.geometry.coordinates)
-            .addTo(mapa);
-
-        const elemento = marcador.getElement();
+        const elemento = document.createElement("div");
+        elemento.className = "marcador-evento";
         elemento.setAttribute("role", "button");
         elemento.setAttribute("aria-label", evento.properties.titulo || "Ver evento");
         elemento.setAttribute("aria-controls", "cartao-evento");
@@ -319,6 +321,10 @@ function mostrarMarcadores(mapa, Marker, eventos, abrirCartao) {
                 abrirCartao(evento, elemento);
             }
         });
+
+        new Marker({ element: elemento, anchor: "center" })
+            .setLngLat(evento.geometry.coordinates)
+            .addTo(mapa);
     }
 }
 
@@ -370,10 +376,11 @@ async function iniciarMapa({ coordenadas = null, aviso = "" } = {}) {
     }
 
     dialogLocalizacao.close();
+    consultaLocalizacao?.abort();
     statusMapa.textContent = "Preparando o mapa…";
 
     try {
-        const [{ criarMapa, desenharRota, limparRota }, { Marker, Popup }] =
+        const [{ criarMapa, mostrarLocalizacao, desenharRota, limparRota }, { Marker, Popup }] =
             await Promise.all([import("./mapa.js"), import(URL_MAPLIBRE)]);
 
         const mapa = criarMapa(containerMapa);
@@ -398,7 +405,7 @@ async function iniciarMapa({ coordenadas = null, aviso = "" } = {}) {
         });
 
         if (coordenadas) {
-            mapa.jumpTo({ center: coordenadas, zoom: 15 });
+            mostrarLocalizacao(mapa, coordenadas);
         }
     } catch (erro) {
         console.error("Erro ao iniciar o mapa:", erro);
@@ -406,7 +413,7 @@ async function iniciarMapa({ coordenadas = null, aviso = "" } = {}) {
     }
 }
 
-function solicitarLocalizacao() {
+async function solicitarLocalizacao() {
     if (!window.isSecureContext || !navigator.geolocation) {
         void iniciarMapa({ aviso: "Localização indisponível. " });
         return;
@@ -415,11 +422,19 @@ function solicitarLocalizacao() {
     botaoUsarLocalizacao.disabled = true;
     botaoUsarLocalizacao.textContent = "Buscando sua localização…";
 
-    navigator.geolocation.getCurrentPosition(
-        ({ coords }) => void iniciarMapa({ coordenadas: [coords.longitude, coords.latitude] }),
-        () => void iniciarMapa({ aviso: "Não conseguimos obter sua localização. " }),
-        { enableHighAccuracy: true, timeout: 10000 },
-    );
+    const consulta = new AbortController();
+    consultaLocalizacao = consulta;
+
+    try {
+        const coordenadas = await obterMelhorLocalizacao({ signal: consulta.signal });
+        void iniciarMapa({ coordenadas });
+    } catch {
+        if (!consulta.signal.aborted) {
+            void iniciarMapa({ aviso: "Não conseguimos obter sua localização. " });
+        }
+    } finally {
+        consultaLocalizacao = null;
+    }
 }
 
 botaoUsarLocalizacao.addEventListener("click", solicitarLocalizacao);

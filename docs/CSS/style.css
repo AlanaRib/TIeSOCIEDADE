@@ -102,36 +102,97 @@ button:disabled {
     container-type: size;
 }
 
+.marcador-evento {
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+}
+
+.marcador-evento::before {
+    position: absolute;
+    inset-inline-start: 9px;
+    bottom: 50%;
+    width: 26px;
+    height: 32px;
+    background:
+        radial-gradient(circle at 50% 12px, var(--off-white) 3px, transparent 3.5px),
+        var(--coral-orange);
+    clip-path: path("M 13 0 C 5.8 0 0 5.5 0 12.5 C 0 19.5 7.1 27 13 32 C 18.9 27 26 19.5 26 12.5 C 26 5.5 20.2 0 13 0 Z");
+    content: "";
+}
+
+.marcador-localizacao {
+    width: 12px;
+    height: 12px;
+    border: 2px solid var(--off-white);
+    border-radius: 50%;
+    background: var(--deep-green);
+    box-shadow: 0 0 0 1px var(--deep-green);
+}
+
 .cartao-evento {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 0.55rem;
     padding: 1rem;
     background: var(--off-white);
     overflow-wrap: anywhere;
 }
 
 .cartao-evento h2 {
-    margin-block: 0.65rem 0.45rem;
-    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    order: -3;
+    padding-inline-end: 2.5rem;
+    font-size: clamp(1.25rem, 3vw, 1.6rem);
 }
 
-#local-evento { margin-top: 0.25rem; }
-#ver-rota { margin-top: 0.8rem; }
+.cartao-evento > p:has(> #data-evento) {
+    order: -2;
+    color: var(--deep-green);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+#local-evento {
+    order: -1;
+    font-size: 0.875rem;
+}
 
 #opcoes-rota {
     min-inline-size: 0;
-    margin: 0.85rem 0 0;
-    padding: 0.65rem;
-    border: 1px solid var(--worker-green);
-    border-radius: 0.5rem;
+    margin: 0.5rem 0 0;
+    padding: 0.55rem 0 0;
+    border: 0;
+    border-top: 1px solid rgb(11 60 63 / 20%);
 }
 
 #opcoes-rota legend {
-    padding-inline: 0.3rem;
-    font-weight: 600;
+    padding-inline: 0 0.5rem;
+    color: var(--deep-green);
+    font-size: 0.82rem;
+    font-weight: 700;
 }
 
-#opcoes-rota button { margin: 0.35rem 0.25rem 0 0; }
-#origem-rota, #status-rota { font-size: 0.875rem; }
-#status-rota:not(:empty) { margin-top: 0.65rem; }
+#opcoes-rota button { margin: 0.5rem 0.25rem 0 0; }
+
+#opcoes-rota > p:last-child, #origem-rota {
+    font-size: 0.75rem;
+    line-height: 1.45;
+}
+
+#opcoes-rota > p:last-child { margin-top: 0.55rem; }
+#opcoes-rota a { color: var(--deep-green); }
+
+#status-rota:empty, .popup-evento [data-status-busca]:empty,
+.popup-evento [data-resultados-busca]:empty { display: none; }
+
+#status-rota:not(:empty) {
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.4rem;
+    background: rgb(11 60 63 / 8%);
+    color: var(--deep-green);
+    font-size: 0.82rem;
+}
 
 #explorar-mapa, #fechar-evento, #continuar-sem-localizacao {
     background: transparent;
@@ -167,6 +228,8 @@ button:disabled {
     margin-top: 1rem;
 }
 
+.popup-evento { margin-top: -16px; }
+
 .popup-evento .maplibregl-popup-content {
     padding: 0;
     border-radius: 0.75rem;
@@ -183,19 +246,58 @@ button:disabled {
 }
 
 .popup-evento #fechar-evento {
-    min-height: 2rem;
-    padding: 0.25rem 0.5rem;
-    font-size: 0.8rem;
+    position: absolute;
+    inset-block-start: 0.7rem;
+    inset-inline-end: 0.7rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    min-height: 0;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(11 60 63 / 8%);
+    font-size: 0;
 }
+
+.popup-evento #fechar-evento::before,
+.popup-evento #fechar-evento::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0.95rem;
+    height: 2px;
+    border-radius: 2px;
+    background: currentColor;
+    content: "";
+}
+
+.popup-evento #fechar-evento::before { transform: translate(-50%, -50%) rotate(45deg); }
+.popup-evento #fechar-evento::after { transform: translate(-50%, -50%) rotate(-45deg); }
 
 .popup-evento form {
     display: grid;
     grid-template-columns: minmax(0, 1fr) auto;
     gap: 0.4rem;
-    margin-block: 0.65rem;
+    margin-block-start: 0.35rem;
+    padding-block-start: 0.7rem;
+    border-block-start: 1px solid rgb(11 60 63 / 20%);
 }
 
 .popup-evento form > p, .popup-evento [data-resultados-busca] { grid-column: 1 / -1; }
+.popup-evento form label { color: var(--deep-green); font-weight: 700; }
+.popup-evento [data-status-busca] { font-size: 0.8rem; }
+
+.popup-evento [data-resultados-busca] {
+    display: grid;
+    gap: 0.35rem;
+}
+
+.popup-evento [data-resultados-busca] button {
+    width: 100%;
+    background: transparent;
+    color: var(--deep-green);
+    text-align: start;
+}
 
 .popup-evento #endereco-origem {
     width: 100%;
@@ -205,6 +307,7 @@ button:disabled {
     border: 1px solid var(--worker-green);
     border-radius: 0.5rem;
     font: inherit;
+    font-size: 0.875rem;
 }
 
 .popup-evento form > button {

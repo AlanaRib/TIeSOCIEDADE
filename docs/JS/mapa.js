@@ -1,6 +1,7 @@
 import {
     LngLatBounds,
     Map,
+    Marker,
     NavigationControl,
 } from "https://unpkg.com/maplibre-gl@6.17.0/dist/maplibre-gl.mjs";
 
@@ -31,6 +32,20 @@ export function criarMapa(container) {
     });
 
     return mapa;
+}
+
+export function mostrarLocalizacao(mapa, coordenadas) {
+    mapa.jumpTo({ center: coordenadas, zoom: 15 });
+
+    const elemento = document.createElement("div");
+    elemento.className = "marcador-localizacao";
+    elemento.setAttribute("role", "img");
+    elemento.setAttribute("aria-label", "Você está aqui");
+    elemento.title = "Você está aqui";
+
+    new Marker({ element: elemento, anchor: "center" })
+        .setLngLat(coordenadas)
+        .addTo(mapa);
 }
 
 export function desenharRota(mapa, trajeto) {

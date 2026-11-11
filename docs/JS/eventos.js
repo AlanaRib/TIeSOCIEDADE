@@ -9,8 +9,13 @@ function coordenadasValidas(coordenadas) {
     }
 
     const [longitude, latitude] = coordenadas;
-    return Number.isFinite(longitude) && Number.isFinite(latitude)
-        && Math.abs(longitude) <= 180 && Math.abs(latitude) <= 90;
+
+    return (
+        Number.isFinite(longitude) &&
+        Number.isFinite(latitude) &&
+        Math.abs(longitude) <= 180 &&
+        Math.abs(latitude) <= 90
+    );
 }
 
 function eventoVisivel(evento, agora) {
@@ -27,7 +32,9 @@ function eventoVisivel(evento, agora) {
     }
 
     const inicio = Date.parse(dados.inicio);
-    const fim = dados.fim == null ? inicio + DURACAO_PADRAO_MS : Date.parse(dados.fim);
+    const fim = dados.fim == null
+        ? inicio + DURACAO_PADRAO_MS
+        : Date.parse(dados.fim);
 
     return Number.isFinite(inicio) && fim >= inicio && fim >= agora;
 }
@@ -40,6 +47,7 @@ function distanciaEmMetros(origem, destino) {
     const deltaLatitude = (latitudeDestino - latitudeOrigem) * radianosPorGrau;
     const deltaLongitude = (longitudeDestino - longitudeOrigem) * radianosPorGrau;
 
+    // Haversine: distância em linha reta sobre a superfície da Terra.
     const haversine =
         Math.sin(deltaLatitude / 2) ** 2 +
         Math.cos(latitudeOrigem * radianosPorGrau) *
@@ -57,11 +65,13 @@ export async function carregarEventos() {
     }
 
     const dados = await resposta.json();
+
     if (dados?.type !== "FeatureCollection" || !Array.isArray(dados.features)) {
         throw new Error("O arquivo de eventos precisa ser um FeatureCollection GeoJSON.");
     }
 
     const agora = Date.now();
+
     return dados.features.filter((evento) => eventoVisivel(evento, agora));
 }
 
